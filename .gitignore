@@ -1,9 +1,13 @@
 # Visual Studio Code
 .vscode/
 
+# EditorConfig
+.editorconfig
+
 # Cocos Structure
 bin/
-Classes/
+Classes/AppDelegate.*
+Classes/HelloWorldScene.*
 cocos2d/
 linux-build/
 build/
