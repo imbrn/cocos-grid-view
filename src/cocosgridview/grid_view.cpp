@@ -60,6 +60,13 @@ void GridView::AddComponent(const Position &at, cocos2d::ui::Widget *component) 
   }
 }
 
+void GridView::RemoveAllComponents(const Position &at) {
+  auto slot = get_slot(at);
+  if (slot) {
+    slot->RemoveAllComponents();
+  }
+}
+
 void GridView::RemoveComponent(const Position &at, cocos2d::ui::Widget *component) {
   auto slot = get_slot(at);
   if (slot) {
@@ -67,7 +74,16 @@ void GridView::RemoveComponent(const Position &at, cocos2d::ui::Widget *componen
   }
 }
 
-cocos2d::Size GridView::available_size() const {
+cocos2d::Rect GridView::get_slot_area(const Position &at) const {
+  auto slot = get_slot(at);
+  if (slot) {
+    return slot->area();
+  } else {
+    return {0, 0, 0, 0};
+  }
+}
+
+cocos2d::Size GridView::calculate_available_size() const {
   auto size = getContentSize();
   auto horz_gap = items_gap_ * (cols() - 1);
   auto vert_gap = items_gap_ * (rows() - 1);
@@ -77,22 +93,30 @@ cocos2d::Size GridView::available_size() const {
   };
 }
 
-cocos2d::Size GridView::slot_size() const {
-  auto available_size = this->available_size();
+cocos2d::Size GridView::calculate_slot_size() const {
+  auto available_size = this->calculate_available_size();
   return {
     available_size.width / cols(),
     available_size.height / rows()
   };
 }
 
-cocos2d::Rect GridView::slot_area(const Position &at) const {
-  auto size = slot_size();
+cocos2d::Rect GridView::calculate_slot_area(const Position &at) const {
+  auto size = calculate_slot_size();
   float x = size.width * at.col + items_gap_ * at.col;
   float y = size.height * at.row + items_gap_ * at.row;
   return { x, y, size.width, size.height };
 }
 
 GridSlot *GridView::get_slot(const Position &at) {
+  for (GridSlot *slot : slots_) {
+    if (slot && slot->grid_position() == at)
+      return slot;
+  }
+  return nullptr;
+}
+
+const GridSlot *GridView::get_slot(const Position &at) const {
   for (GridSlot *slot : slots_) {
     if (slot && slot->grid_position() == at)
       return slot;

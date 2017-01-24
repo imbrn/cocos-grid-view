@@ -15,6 +15,8 @@ namespace cocosgridview
 /// GridView class.
 ///
 class GridView : public cocos2d::ui::Widget {
+  friend class GridSlot;
+
 protected:
 
   GridView(const Dimension &dimension, float items_gap);
@@ -26,10 +28,9 @@ public:
 
   void AddComponent(const Position &at, cocos2d::ui::Widget *component);
   void RemoveComponent(const Position &at, cocos2d::ui::Widget *component);
+  void RemoveAllComponents(const Position &at);
 
-  cocos2d::Size available_size() const;
-  cocos2d::Size slot_size() const;
-  cocos2d::Rect slot_area(const Position &at) const;
+  cocos2d::Rect get_slot_area(const Position &at) const;
 
   unsigned int rows() const;
   unsigned int cols() const;
@@ -51,6 +52,11 @@ private:
   void PositionSlots();
 
   GridSlot *get_slot(const Position &at);
+  const GridSlot *get_slot(const Position &at) const;
+
+  cocos2d::Size calculate_available_size() const;
+  cocos2d::Size calculate_slot_size() const;
+  cocos2d::Rect calculate_slot_area(const Position &at) const;
 
 private:
 

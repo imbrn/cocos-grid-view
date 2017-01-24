@@ -21,7 +21,7 @@ GridSlot* GridSlot::create(GridView *grid_view, const Position &grid_position) {
 }
 
 void GridSlot::Align() {
-  auto area = grid_view_->slot_area(grid_position_);
+  auto area = grid_view_->calculate_slot_area(grid_position_);
   this->setAnchorPoint({0, 0});
   this->setPosition(area.origin);
   this->setContentSize(area.size);
@@ -59,6 +59,12 @@ void GridSlot::AlignComponent(cocos2d::ui::Widget *component) {
   }
 }
 
+void GridSlot::RemoveAllComponents() {
+  for (auto component : components_) {
+    RemoveComponent(component);
+  }
+}
+
 void GridSlot::RemoveComponent(cocos2d::ui::Widget *component) {
   if (HasComponent(component)) {
     components_.remove(component);
@@ -68,6 +74,10 @@ void GridSlot::RemoveComponent(cocos2d::ui::Widget *component) {
 
 bool GridSlot::HasComponent(cocos2d::ui::Widget *component) const {
   return std::find(components_.begin(), components_.end(), component) != components_.end();
+}
+
+cocos2d::Rect GridSlot::area() const {
+  return getBoundingBox();
 }
 
 unsigned int GridSlot::components_amount() const {

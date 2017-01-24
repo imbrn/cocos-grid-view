@@ -23,6 +23,9 @@ public:
 
   void AddComponent(cocos2d::ui::Widget *component);
   void RemoveComponent(cocos2d::ui::Widget *component);
+  void RemoveAllComponents();
+
+  cocos2d::Rect area() const;
 
   unsigned int components_amount() const;
 
