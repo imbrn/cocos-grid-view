@@ -43,6 +43,10 @@ private:
   void InsertComponent(cocos2d::ui::Widget *component);
   void AlignComponents();
   void AlignComponent(cocos2d::ui::Widget* component);
+  void FitComponents();
+  void FitComponent(cocos2d::ui::Widget *component);
+  float CalculateComponentScale(cocos2d::ui::Widget *component) const;
+  float GetScale(float horz, float vert) const;
 
 private:
 

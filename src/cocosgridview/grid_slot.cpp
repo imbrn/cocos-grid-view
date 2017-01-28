@@ -29,12 +29,17 @@ void GridSlot::Align() {
 
 void GridSlot::onSizeChanged() {
   cocos2d::ui::Widget::onSizeChanged();
-  AlignComponents();
+  
+  for (auto component : components_) {
+    FitComponent(component);
+    AlignComponent(component);
+  }
 }
 
 void GridSlot::AddComponent(cocos2d::ui::Widget *component) {
   if (!HasComponent(component)) {
     InsertComponent(component);
+    FitComponent(component);
     AlignComponent(component);
   }
 }
@@ -56,6 +61,31 @@ void GridSlot::AlignComponent(cocos2d::ui::Widget *component) {
     float y = getContentSize().height / 2;
     component->setAnchorPoint({0.5, 0.5});
     component->setPosition({x, y});
+  }
+}
+
+void GridSlot::FitComponents() {
+  for (auto component : components_) {
+    FitComponent(component);
+  }
+}
+
+void GridSlot::FitComponent(cocos2d::ui::Widget *component) {
+  float scale = CalculateComponentScale(component);
+  component->setScale(scale, scale);
+}
+
+float GridSlot::CalculateComponentScale(cocos2d::ui::Widget *component) const {
+  float horz_scale = area().size.width / component->getContentSize().width;
+  float vert_scale = area().size.height / component->getContentSize().height;
+  return GetScale(horz_scale, vert_scale);
+}
+
+float GridSlot::GetScale(float horz, float vert) const {
+  if (horz < vert) {
+    return horz;
+  } else {
+    return vert;
   }
 }
 
