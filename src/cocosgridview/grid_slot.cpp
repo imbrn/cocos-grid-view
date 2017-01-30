@@ -91,8 +91,9 @@ float GridSlot::GetScale(float horz, float vert) const {
 
 void GridSlot::RemoveAllComponents() {
   for (auto component : components_) {
-    RemoveComponent(component);
+    this->removeChild(component);
   }
+  components_.clear();
 }
 
 void GridSlot::RemoveComponent(cocos2d::ui::Widget *component) {
