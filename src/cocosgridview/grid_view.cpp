@@ -60,6 +60,12 @@ void GridView::AddComponent(const Position &at, cocos2d::ui::Widget *component) 
   }
 }
 
+void GridView::RemoveAllComponents() {
+  for (auto slot : slots_) {
+    slot->RemoveAllComponents();
+  }
+}
+
 void GridView::RemoveAllComponents(const Position &at) {
   auto slot = get_slot(at);
   if (slot) {

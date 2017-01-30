@@ -29,6 +29,7 @@ public:
   void AddComponent(const Position &at, cocos2d::ui::Widget *component);
   void RemoveComponent(const Position &at, cocos2d::ui::Widget *component);
   void RemoveAllComponents(const Position &at);
+  void RemoveAllComponents();
 
   cocos2d::Rect get_slot_area(const Position &at) const;
 
