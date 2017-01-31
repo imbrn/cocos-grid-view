@@ -90,15 +90,15 @@ float GridSlot::GetScale(float horz, float vert) const {
 }
 
 void GridSlot::RemoveAllComponents() {
-  for (auto component : components_) {
-    this->removeChild(component);
+  while (components_.size() > 0) {
+    auto component = components_.back();
+    RemoveComponent(component);
   }
-  components_.clear();
 }
 
 void GridSlot::RemoveComponent(cocos2d::ui::Widget *component) {
   if (HasComponent(component)) {
-    components_.remove(component);
+    components_.erase(std::remove(components_.begin(), components_.end(), component), components_.end());
     this->removeChild(component);
   }
 }
@@ -113,6 +113,22 @@ cocos2d::Rect GridSlot::area() const {
 
 unsigned int GridSlot::components_amount() const {
   return components_.size();
+}
+
+cocos2d::ui::Widget *GridSlot::get_component(unsigned int index) {
+  if (index < components_amount()) {
+    return components_[index];
+  } else {
+    return nullptr;
+  }
+}
+
+const cocos2d::ui::Widget *GridSlot::get_component(unsigned int index) const {
+  if (index < components_amount()) {
+    return components_.at(index);
+  } else {
+    return nullptr;
+  }
 }
 
 GridView *GridSlot::get_grid_view() {

@@ -4,6 +4,7 @@
 #include <cocos2d.h>
 #include <ui/CocosGUI.h>
 #include "position.h"
+#include <vector>
 
 namespace cocosgridview {
 
@@ -28,6 +29,8 @@ public:
   cocos2d::Rect area() const;
 
   unsigned int components_amount() const;
+  cocos2d::ui::Widget *get_component(unsigned int index);
+  const cocos2d::ui::Widget *get_component(unsigned int index) const;
 
   GridView *get_grid_view();
   const Position &grid_position() const;
@@ -52,7 +55,7 @@ private:
 
   GridView *grid_view_ = nullptr;
   Position grid_position_;
-  std::list<cocos2d::ui::Widget*> components_;
+  std::vector<cocos2d::ui::Widget*> components_;
 
 };
 

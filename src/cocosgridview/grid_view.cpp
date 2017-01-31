@@ -1,10 +1,12 @@
 #include "grid_view.h"
+#include <climits>
 
 namespace cocosgridview {
 
 GridView::GridView(const Dimension &dimension, float items_gap):
       dimension_(dimension),
-      items_gap_(items_gap) {
+      items_gap_(items_gap),
+      invalid_position_(UINT_MAX, UINT_MAX) {
   RecicleSlots();
 }
 
@@ -130,6 +132,41 @@ const GridSlot *GridView::get_slot(const Position &at) const {
   return nullptr;
 }
 
+unsigned int GridView::components_count(const Position &at) const {
+  auto slot = get_slot(at);
+  if (slot) {
+    return slot->components_amount();
+  } else {
+    return 0;
+  }
+}
+
+cocos2d::ui::Widget *GridView::get_component(const Position &at, unsigned int index) {
+  auto slot = get_slot(at);
+  if (slot) {
+    return slot->get_component(index);
+  } else {
+    return nullptr;
+  }
+}
+
+const cocos2d::ui::Widget *GridView::get_component(const Position &at, unsigned int index) const {
+  auto slot = get_slot(at);
+  if (slot) {
+    return slot->get_component(index);
+  } else {
+    return nullptr;
+  }
+}
+
+Position GridView::get_slot_by_location(const cocos2d::Point &location) const {
+  for (auto slot : slots_) {
+    if (slot->getBoundingBox().containsPoint(location))
+      return slot->grid_position();
+  }
+  return invalid_position_;
+}
+
 unsigned int GridView::rows() const {
   return dimension_.rows;
 }
@@ -155,6 +192,10 @@ void GridView::set_dimension(const Dimension &dimension) {
 void GridView::set_items_gap(float items_gap) {
   items_gap_ = items_gap;
   PositionSlots();
+}
+
+const Position &GridView::invalid_position() const {
+  return invalid_position_;
 }
 
 }

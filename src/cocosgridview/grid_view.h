@@ -38,8 +38,16 @@ public:
   const Dimension &dimension() const;
   float items_gap() const;
 
+  unsigned int components_count(const Position &at) const;
+  cocos2d::ui::Widget *get_component(const Position &at, unsigned int index);
+  const cocos2d::ui::Widget *get_component(const Position &at, unsigned int index) const;
+
+  Position get_slot_by_location(const cocos2d::Point &location) const;
+
   void set_dimension(const Dimension &dimension);
   void set_items_gap(float items_gap);
+
+  const Position &invalid_position() const;
 
 protected:
 
@@ -64,6 +72,7 @@ private:
   Dimension dimension_;
   float items_gap_;
   std::vector<GridSlot*> slots_;
+  Position invalid_position_;
 
 };
 }
