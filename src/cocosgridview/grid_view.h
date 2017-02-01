@@ -56,7 +56,6 @@ protected:
 private:
 
   void RecicleSlots();
-  void AddSlot(GridSlot *slot);
   void RemoveSlots();
   void PositionSlots();
 
@@ -71,7 +70,7 @@ private:
 
   Dimension dimension_;
   float items_gap_;
-  std::vector<GridSlot*> slots_;
+  std::vector<GridSlot> slots_;
   Position invalid_position_;
 
 };

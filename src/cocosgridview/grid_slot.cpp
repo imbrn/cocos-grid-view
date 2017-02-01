@@ -9,27 +9,8 @@ GridSlot::GridSlot(GridView *grid_view, const Position &grid_position):
       grid_position_(grid_position) {
 }
 
-GridSlot* GridSlot::create(GridView *grid_view, const Position &grid_position) {
-  GridSlot *obj = new GridSlot(grid_view, grid_position);
-  if (obj->init()) {
-    obj->autorelease();
-    return obj;
-  } else {
-    delete obj;
-    return nullptr;
-  }
-}
-
 void GridSlot::Align() {
-  auto area = grid_view_->calculate_slot_area(grid_position_);
-  this->setAnchorPoint({0, 0});
-  this->setPosition(area.origin);
-  this->setContentSize(area.size);
-}
-
-void GridSlot::onSizeChanged() {
-  cocos2d::ui::Widget::onSizeChanged();
-  
+  area_ = grid_view_->calculate_slot_area(grid_position_);
   for (auto component : components_) {
     FitComponent(component);
     AlignComponent(component);
@@ -46,7 +27,7 @@ void GridSlot::AddComponent(cocos2d::ui::Widget *component) {
 
 void GridSlot::InsertComponent(cocos2d::ui::Widget *component) {
   components_.push_back(component);
-  this->addChild(component);
+  grid_view_->addChild(component);
 }
 
 void GridSlot::AlignComponents() {
@@ -57,8 +38,8 @@ void GridSlot::AlignComponents() {
 
 void GridSlot::AlignComponent(cocos2d::ui::Widget *component) {
   if (component) {
-    float x = getContentSize().width / 2;
-    float y = getContentSize().height / 2;
+    float x = area_.getMidX();
+    float y = area_.getMidY();
     component->setAnchorPoint({0.5, 0.5});
     component->setPosition({x, y});
   }
@@ -76,8 +57,8 @@ void GridSlot::FitComponent(cocos2d::ui::Widget *component) {
 }
 
 float GridSlot::CalculateComponentScale(cocos2d::ui::Widget *component) const {
-  float horz_scale = area().size.width / component->getContentSize().width;
-  float vert_scale = area().size.height / component->getContentSize().height;
+  float horz_scale = area_.size.width / component->getContentSize().width;
+  float vert_scale = area_.size.height / component->getContentSize().height;
   return GetScale(horz_scale, vert_scale);
 }
 
@@ -99,7 +80,7 @@ void GridSlot::RemoveAllComponents() {
 void GridSlot::RemoveComponent(cocos2d::ui::Widget *component) {
   if (HasComponent(component)) {
     components_.erase(std::remove(components_.begin(), components_.end(), component), components_.end());
-    this->removeChild(component);
+    grid_view_->removeChild(component);
   }
 }
 
@@ -108,7 +89,7 @@ bool GridSlot::HasComponent(cocos2d::ui::Widget *component) const {
 }
 
 cocos2d::Rect GridSlot::area() const {
-  return getBoundingBox();
+  return area_;
 }
 
 unsigned int GridSlot::components_amount() const {

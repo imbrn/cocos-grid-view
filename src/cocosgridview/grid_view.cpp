@@ -30,28 +30,19 @@ void GridView::RecicleSlots() {
   RemoveSlots();
   for (unsigned int row = 0; row < rows(); row++) {
     for (unsigned int col = 0; col < cols(); col++) {
-      auto slot = GridSlot::create(this, {row, col});
-      AddSlot(slot);
+      GridSlot slot(this, {row, col});
+      slots_.push_back(slot);
     }
   }
 }
 
-void GridView::AddSlot(GridSlot *slot) {
-  slots_.push_back(slot);
-  this->addChild(slot);
-}
-
 void GridView::RemoveSlots() {
-  for (auto it = slots_.begin(); it != slots_.end(); it++) {
-    auto slot = *it;
-    this->removeChild(slot);
-  }
   slots_.clear();
 }
 
 void GridView::PositionSlots() {
-  for (auto slot : slots_) {
-    slot->Align();
+  for (GridSlot &slot : slots_) {
+    slot.Align();
   }
 }
 
@@ -63,8 +54,8 @@ void GridView::AddComponent(const Position &at, cocos2d::ui::Widget *component) 
 }
 
 void GridView::RemoveAllComponents() {
-  for (auto slot : slots_) {
-    slot->RemoveAllComponents();
+  for (GridSlot &slot : slots_) {
+    slot.RemoveAllComponents();
   }
 }
 
@@ -117,17 +108,17 @@ cocos2d::Rect GridView::calculate_slot_area(const Position &at) const {
 }
 
 GridSlot *GridView::get_slot(const Position &at) {
-  for (GridSlot *slot : slots_) {
-    if (slot && slot->grid_position() == at)
-      return slot;
+  for (GridSlot &slot : slots_) {
+    if (slot.grid_position() == at)
+      return &slot;
   }
   return nullptr;
 }
 
 const GridSlot *GridView::get_slot(const Position &at) const {
-  for (GridSlot *slot : slots_) {
-    if (slot && slot->grid_position() == at)
-      return slot;
+  for (const GridSlot &slot : slots_) {
+    if (slot.grid_position() == at)
+      return &slot;
   }
   return nullptr;
 }
@@ -160,9 +151,9 @@ const cocos2d::ui::Widget *GridView::get_component(const Position &at, unsigned 
 }
 
 Position GridView::get_slot_by_location(const cocos2d::Point &location) const {
-  for (auto slot : slots_) {
-    if (slot->getBoundingBox().containsPoint(location))
-      return slot->grid_position();
+  for (const GridSlot &slot : slots_) {
+    if (slot.area().containsPoint(location))
+      return slot.grid_position();
   }
   return invalid_position_;
 }

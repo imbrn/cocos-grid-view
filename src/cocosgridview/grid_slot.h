@@ -14,10 +14,13 @@ class GridView;
 ///
 /// GridSlot class.
 ///
-class GridSlot: public cocos2d::ui::Widget {
-public:
+class GridSlot {
+  friend class GridView;
 
-  static GridSlot* create(GridView *grid_view, const Position &grid_position);
+protected:
+  GridSlot(GridView *grid_view, const Position &grid_position);
+
+public:
   virtual ~GridSlot() {}
 
   void Align();
@@ -35,13 +38,7 @@ public:
   GridView *get_grid_view();
   const Position &grid_position() const;
 
-protected:
-
-  GridSlot(GridView *grid_view, const Position &grid_position);
-  virtual void onSizeChanged() override;
-
 private:
-
   bool HasComponent(cocos2d::ui::Widget *component) const;
   void InsertComponent(cocos2d::ui::Widget *component);
   void AlignComponents();
@@ -52,11 +49,10 @@ private:
   float GetScale(float horz, float vert) const;
 
 private:
-
   GridView *grid_view_ = nullptr;
   Position grid_position_;
+  cocos2d::Rect area_;
   std::vector<cocos2d::ui::Widget*> components_;
-
 };
 
 }
