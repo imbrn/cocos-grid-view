@@ -18,8 +18,9 @@ public:
   virtual ~GridView() {}
   virtual bool init() override;
 
+  cocos2d::Point get_slot_origin(const Position &at) const;
   cocos2d::Rect get_slot_area(const Position &at) const;
-  cocos2d::Size get_slot_size() const;
+  cocos2d::Size get_slot_size(const Position &at) const;
 
   unsigned int rows();
   unsigned int cols();

@@ -29,17 +29,26 @@ void GridView::DoInit() {
 }
 
 cocos2d::Rect GridView::get_slot_area(const Position &at) const {
-  auto size = get_slot_size();
-  unsigned int row = rows_ - at.row - 1;
-  unsigned int col = at.col;
-  return {(col * size.width) + (col * gap_), (row * size.height) + (row * gap_), size.width, size.height};
+  auto origin = get_slot_origin(at);
+  auto size = get_slot_size(at);
+  cocos2d::Rect area(origin, size);
+  return area;
 }
 
-cocos2d::Size GridView::get_slot_size() const {
+cocos2d::Point GridView::get_slot_origin(const Position &at) const {
+  auto size = get_slot_size(at);
+  unsigned int row = rows_ - at.row - 1;
+  unsigned int col = at.col;
+  float x = round((col * size.width) + (col * gap_));
+  float y = round((row * size.height) + (row * gap_));
+  return {x, y};
+}
+
+cocos2d::Size GridView::get_slot_size(const Position &at) const {
   float available_width = getContentSize().width - ((cols_ - 1) * gap_);
   float available_height = getContentSize().height - ((rows_ - 1) * gap_);
-  float w = available_width / cols_;
-  float h = available_height / rows_;
+  float w = round(available_width / cols_);
+  float h = round(available_height / rows_);
   return {w, h};
 }
 
@@ -146,7 +155,7 @@ void GridView::ScaleComponent(const Position &at) {
 }
 
 void GridView::DoScaleComponent(const Position &at, cocos2d::ui::Widget *component) {
-  auto size = get_slot_size();
+  auto size = get_slot_size(at);
   DoScaleComponent(component, size);
 }
 
