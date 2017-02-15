@@ -4,76 +4,64 @@
 #include <cocos2d.h>
 #include <ui/CocosGUI.h>
 #include <vector>
-#include "dimension.h"
 #include "position.h"
-#include "grid_slot.h"
 
-namespace cocosgridview
-{
+namespace cocosgridview {
 
 ///
 /// GridView class.
 ///
 class GridView : public cocos2d::ui::Widget {
-  friend class GridSlot;
-
-protected:
-
-  GridView(const Dimension &dimension, float items_gap);
-
 public:
+	static GridView *create(unsigned int rows, unsigned int cols, float gap = 10);
+	GridView(unsigned int rows, unsigned int cols, float gap);
+	virtual ~GridView() {}
+	virtual bool init() override;
 
-  static GridView *create(const Dimension &dimension, float items_gap = 10);
-  virtual ~GridView() {}
+	cocos2d::Rect get_slot_area(const Position &at) const;
+	cocos2d::Size get_slot_size() const;
 
-  void AddComponent(const Position &at, cocos2d::ui::Widget *component);
-  void RemoveComponent(const Position &at, cocos2d::ui::Widget *component);
-  void RemoveAllComponents(const Position &at);
-  void RemoveAllComponents();
+	unsigned int rows();
+	unsigned int cols();
+	void set_dimension(unsigned int rows, unsigned int cols);
 
-  cocos2d::Rect get_slot_area(const Position &at) const;
+	float get_gap() const;
+	void set_gap(float gap);
 
-  unsigned int rows() const;
-  unsigned int cols() const;
-  const Dimension &dimension() const;
-  float items_gap() const;
+	cocos2d::ui::Widget *get_component(const Position &at);
+	void set_component(const Position &at, cocos2d::ui::Widget *component);
 
-  unsigned int components_count(const Position &at) const;
-  cocos2d::ui::Widget *get_component(const Position &at, unsigned int index);
-  const cocos2d::ui::Widget *get_component(const Position &at, unsigned int index) const;
-
-  Position get_slot_by_location(const cocos2d::Point &location) const;
-
-  void set_dimension(const Dimension &dimension);
-  void set_items_gap(float items_gap);
-
-  const Position &invalid_position() const;
+	void Iterate(const std::function<void(const Position &at, cocos2d::ui::Widget*)> &function);
+	void IteratePositions(const std::function<void(const Position &at)> &function);
 
 protected:
-
-  virtual void onSizeChanged() override;
-
-private:
-
-  void RecicleSlots();
-  void RemoveSlots();
-  void PositionSlots();
-
-  GridSlot *get_slot(const Position &at);
-  const GridSlot *get_slot(const Position &at) const;
-
-  cocos2d::Size calculate_available_size() const;
-  cocos2d::Size calculate_slot_size() const;
-  cocos2d::Rect calculate_slot_area(const Position &at) const;
+	virtual void onSizeChanged() override;
 
 private:
+	void DoInit();
+	
+	void RecicleComponents();
+	void ReciclePosition(const Position &at, std::vector<std::vector<cocos2d::ui::Widget*>> &new_components);
+	void DiscardComponent(const Position &at);
+	void KeepComponent(const Position &at, std::vector<std::vector<cocos2d::ui::Widget*>> &new_components);
+	void RemoveComponent(const Position &at, cocos2d::ui::Widget *component);
+	void AddComponent(const Position &at, cocos2d::ui::Widget *component);
 
-  Dimension dimension_;
-  float items_gap_;
-  std::vector<GridSlot> slots_;
-  Position invalid_position_;
+	void ScaleComponents();
+	void ScaleComponent(const Position &at);
+	void DoScaleComponent(const Position &at, cocos2d::ui::Widget *component);
+	void DoScaleComponent(cocos2d::ui::Widget *component, const cocos2d::Size &size);
+	void AlignComponents();
+	void AlignComponent(const Position &at);
+	void DoAlignComponent(const Position &at, cocos2d::ui::Widget *component);
 
+private:
+	unsigned int rows_;
+	unsigned int cols_;
+	float gap_;
+	std::vector<std::vector<cocos2d::ui::Widget*>> components_;
 };
+
 }
 
 #endif

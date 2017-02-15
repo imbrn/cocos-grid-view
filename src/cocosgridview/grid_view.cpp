@@ -3,190 +3,171 @@
 
 namespace cocosgridview {
 
-GridView::GridView(const Dimension &dimension, float items_gap):
-      dimension_(dimension),
-      items_gap_(items_gap),
-      invalid_position_(UINT_MAX, UINT_MAX) {
-  RecicleSlots();
+GridView *GridView::create(unsigned int rows, unsigned int cols, float gap) {
+	GridView *obj = new GridView(rows, cols, gap);
+	if (obj->init()) {
+		obj->autorelease();
+		return obj;
+	} else {
+		delete obj;
+		return nullptr;
+	}
 }
 
-GridView *GridView::create(const Dimension &dimension, float items_gap) {
-  GridView *obj = new GridView(dimension, items_gap);
-  if (obj->init()) {
-    obj->autorelease();
-    return obj;
-  } else {
-    delete obj;
-    return nullptr;
-  }
+GridView::GridView(unsigned int rows, unsigned int cols, float gap): rows_(rows), cols_(cols), gap_(gap) {
 }
 
-void GridView::onSizeChanged() {
-  cocos2d::ui::Widget::onSizeChanged();
-  PositionSlots();
+bool GridView::init() {
+	if (!cocos2d::ui::Widget::init())
+		return false;
+	DoInit();
+	return true;
 }
 
-void GridView::RecicleSlots() {
-  RemoveSlots();
-  for (unsigned int row = 0; row < rows(); row++) {
-    for (unsigned int col = 0; col < cols(); col++) {
-      GridSlot slot(this, {row, col});
-      slots_.push_back(slot);
-    }
-  }
-}
-
-void GridView::RemoveSlots() {
-  slots_.clear();
-}
-
-void GridView::PositionSlots() {
-  for (GridSlot &slot : slots_) {
-    slot.Align();
-  }
-}
-
-void GridView::AddComponent(const Position &at, cocos2d::ui::Widget *component) {
-  auto slot = get_slot(at);
-  if (slot) {
-    slot->AddComponent(component);
-  }
-}
-
-void GridView::RemoveAllComponents() {
-  for (GridSlot &slot : slots_) {
-    slot.RemoveAllComponents();
-  }
-}
-
-void GridView::RemoveAllComponents(const Position &at) {
-  auto slot = get_slot(at);
-  if (slot) {
-    slot->RemoveAllComponents();
-  }
-}
-
-void GridView::RemoveComponent(const Position &at, cocos2d::ui::Widget *component) {
-  auto slot = get_slot(at);
-  if (slot) {
-    slot->RemoveComponent(component);
-  }
+void GridView::DoInit() {
+	components_ = std::vector<std::vector<cocos2d::ui::Widget*>>(rows_, std::vector<cocos2d::ui::Widget*>(cols_));
 }
 
 cocos2d::Rect GridView::get_slot_area(const Position &at) const {
-  auto slot = get_slot(at);
-  if (slot) {
-    return slot->area();
-  } else {
-    return {0, 0, 0, 0};
-  }
+	auto size = get_slot_size();
+	unsigned int row = rows_ - at.row - 1;
+	unsigned int col = at.col;
+	return {(col * size.width)  + (col * gap_), (row * size.height) + (row * gap_), size.width, size.height};
 }
 
-cocos2d::Size GridView::calculate_available_size() const {
-  auto size = getContentSize();
-  auto horz_gap = items_gap_ * (cols() - 1);
-  auto vert_gap = items_gap_ * (rows() - 1);
-  return {
-    size.width - horz_gap,
-    size.height - vert_gap
-  };
+cocos2d::Size GridView::get_slot_size() const {
+	float available_width = getContentSize().width - ((cols_ - 1) * gap_);
+	float available_height = getContentSize().height - ((rows_ - 1) * gap_);
+	float w = available_width / cols_;
+	float h = available_height / rows_;
+	return {w, h};
 }
 
-cocos2d::Size GridView::calculate_slot_size() const {
-  auto available_size = this->calculate_available_size();
-  return {
-    available_size.width / cols(),
-    available_size.height / rows()
-  };
+void GridView::set_dimension(unsigned int rows, unsigned int cols) {
+	rows_ = rows;
+	cols_ = cols;
+	RecicleComponents();
+	ScaleComponents();
+	AlignComponents();
 }
 
-cocos2d::Rect GridView::calculate_slot_area(const Position &at) const {
-  auto size = calculate_slot_size();
-  float x = size.width * at.col + items_gap_ * at.col;
-  float y = size.height * at.row + items_gap_ * at.row;
-  return { x, y, size.width, size.height };
+void GridView::RecicleComponents() {
+	std::vector<std::vector<cocos2d::ui::Widget*>> new_components(rows_ , std::vector<cocos2d::ui::Widget*>(cols_));
+	for (unsigned int row = 0; row < components_.size(); row++)
+		for (unsigned int col = 0; col < components_[row].size(); col++)
+			ReciclePosition({row, col}, new_components);
+	components_ = new_components;
 }
 
-GridSlot *GridView::get_slot(const Position &at) {
-  for (GridSlot &slot : slots_) {
-    if (slot.grid_position() == at)
-      return &slot;
-  }
-  return nullptr;
+void GridView::ReciclePosition(const Position &at, std::vector<std::vector<cocos2d::ui::Widget*>> &new_components) {
+	if (at.row > rows_-1 || at.col > cols_-1)
+		DiscardComponent(at);
+	else
+		KeepComponent(at, new_components);
 }
 
-const GridSlot *GridView::get_slot(const Position &at) const {
-  for (const GridSlot &slot : slots_) {
-    if (slot.grid_position() == at)
-      return &slot;
-  }
-  return nullptr;
+void GridView::DiscardComponent(const Position &at) {
+	set_component(at, nullptr);
 }
 
-unsigned int GridView::components_count(const Position &at) const {
-  auto slot = get_slot(at);
-  if (slot) {
-    return slot->components_amount();
-  } else {
-    return 0;
-  }
+void GridView::KeepComponent(const Position &at, std::vector<std::vector<cocos2d::ui::Widget*>> &new_components) {
+	new_components[at.row][at.col] = components_[at.row][at.col];
 }
 
-cocos2d::ui::Widget *GridView::get_component(const Position &at, unsigned int index) {
-  auto slot = get_slot(at);
-  if (slot) {
-    return slot->get_component(index);
-  } else {
-    return nullptr;
-  }
+cocos2d::ui::Widget *GridView::get_component(const Position &at) {
+	return components_[at.row][at.col];
 }
 
-const cocos2d::ui::Widget *GridView::get_component(const Position &at, unsigned int index) const {
-  auto slot = get_slot(at);
-  if (slot) {
-    return slot->get_component(index);
-  } else {
-    return nullptr;
-  }
+void GridView::set_component(const Position &at, cocos2d::ui::Widget *component) {
+	auto old = get_component(at);
+	if (old != component) {
+		RemoveComponent(at, old);
+		AddComponent(at, component);
+	}
 }
 
-Position GridView::get_slot_by_location(const cocos2d::Point &location) const {
-  for (const GridSlot &slot : slots_) {
-    if (slot.area().containsPoint(location))
-      return slot.grid_position();
-  }
-  return invalid_position_;
+void GridView::RemoveComponent(const Position &at, cocos2d::ui::Widget *component) {
+	if (component) {
+		removeChild(component);
+		components_[at.row][at.col] = nullptr;
+	}
 }
 
-unsigned int GridView::rows() const {
-  return dimension_.rows;
+void GridView::AddComponent(const Position &at, cocos2d::ui::Widget *component) {
+	if (component) {
+		addChild(component);
+		components_[at.row][at.col] = component;
+		DoScaleComponent(at, component);
+		DoAlignComponent(at, component);
+	}
 }
 
-unsigned int GridView::cols() const {
-  return dimension_.cols;
+void GridView::onSizeChanged() {
+	cocos2d::ui::Widget::onSizeChanged();
+	ScaleComponents();
+	AlignComponents();
 }
 
-const Dimension &GridView::dimension() const {
-  return dimension_;
+void GridView::Iterate(const std::function<void(const Position &at, cocos2d::ui::Widget*)> &function) {
+	IteratePositions([this, function](const Position &at) {
+		function(at, get_component(at));
+	});
 }
 
-float GridView::items_gap() const {
-  return items_gap_;
+void GridView::IteratePositions(const std::function<void(const Position &at)> &function) {
+	for (unsigned int row = 0; row < rows_; row++)
+		for (unsigned int col = 0; col < cols_; col++)
+			function({row, col});
 }
 
-void GridView::set_dimension(const Dimension &dimension) {
-  dimension_ = dimension;
-  RecicleSlots();
-  PositionSlots();
+void GridView::ScaleComponents() {
+	IteratePositions([this](const Position &at) {
+		ScaleComponent(at);
+	});
 }
 
-void GridView::set_items_gap(float items_gap) {
-  items_gap_ = items_gap;
-  PositionSlots();
+void GridView::ScaleComponent(const Position &at) {
+	auto component = get_component(at);
+	if (component)
+		DoScaleComponent(at, component);
 }
 
-const Position &GridView::invalid_position() const {
-  return invalid_position_;
+void GridView::DoScaleComponent(const Position &at, cocos2d::ui::Widget *component) {
+	auto size = get_slot_size();
+	DoScaleComponent(component, size);
+}
+
+void GridView::DoScaleComponent(cocos2d::ui::Widget *component, const cocos2d::Size &size) {
+	float scale_vert = size.width  / component->getContentSize().width;
+	float scale_horz = size.height / component->getContentSize().height;
+	float scale = MIN(scale_vert, scale_horz);
+	component->setScale(scale);
+}
+
+void GridView::AlignComponents() {
+	IteratePositions([this](const Position &at) {
+		AlignComponent(at);
+	});
+}
+
+void GridView::AlignComponent(const Position &at) {
+	auto component = get_component(at);
+	if (component)
+		DoAlignComponent(at, component);
+}
+
+void GridView::DoAlignComponent(const Position &at, cocos2d::ui::Widget *component) {
+	auto area = get_slot_area(at);
+	component->setAnchorPoint({0.5, 0.5});
+	component->setPosition({area.getMidX(), area.getMidY()});
+}
+
+unsigned int GridView::rows() {
+	return rows_;
+}
+
+unsigned int GridView::cols() {
+	return cols_;
 }
 
 }
