@@ -30,6 +30,7 @@ public:
 
   cocos2d::ui::Widget *get_component(const Position &at);
   void set_component(const Position &at, cocos2d::ui::Widget *component);
+  void RemoveAllComponents();
 
   void Iterate(const std::function<void(const Position &at, cocos2d::ui::Widget *)> &function);
   void IteratePositions(const std::function<void(const Position &at)> &function);

@@ -96,6 +96,12 @@ void GridView::set_component(const Position &at, cocos2d::ui::Widget *component)
   }
 }
 
+void GridView::RemoveAllComponents() {
+  IteratePositions([this](const Position &at) {
+    set_component(at, nullptr);
+  });
+}
+
 void GridView::RemoveComponent(const Position &at, cocos2d::ui::Widget *component) {
   if (component) {
     removeChild(component);
