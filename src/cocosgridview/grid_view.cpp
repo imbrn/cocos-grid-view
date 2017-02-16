@@ -94,10 +94,9 @@ void GridView::set_gap(float gap) {
 }
 
 Position GridView::get_slot(const std::function<bool(Position)> &criteria) const {
-  for (unsigned int row = 0; row < rows_; row++)
-    for (unsigned int col = 0; col< cols_; col++)
-      if (criteria({row, col}))
-        return {row, col};
+  for (Position at : positions())
+    if (criteria(at))
+      return at;
   return Position();
 }
 
@@ -108,10 +107,9 @@ Position GridView::get_slot(const cocos2d::Point &location) const {
 }
 
 cocos2d::ui::Widget *GridView::get_component(const std::function<bool(Position, cocos2d::ui::Widget*)> &criteria) {
-  for (unsigned int row = 0; row < rows_; row++)
-    for (unsigned int col = 0; col< cols_; col++)
-      if (criteria({row, col}, get_component(Position{row, col})))
-        return get_component(Position{row, col});
+  for (Position at : positions())
+    if (criteria(at, get_component(at)))
+      return get_component(at);
   return nullptr;
 }
 
@@ -213,9 +211,8 @@ void GridView::Iterate(const std::function<void(const Position &at, cocos2d::ui:
 }
 
 void GridView::IteratePositions(const std::function<void(const Position &at)> &function) {
-  for (unsigned int row = 0; row < rows_; row++)
-    for (unsigned int col = 0; col < cols_; col++)
-      function({row, col});
+  for (Position p : positions())
+      function(p);
 }
 
 unsigned int GridView::rows() {
@@ -224,6 +221,14 @@ unsigned int GridView::rows() {
 
 unsigned int GridView::cols() {
   return cols_;
+}
+
+const std::vector<Position> GridView::positions() const {
+  std::vector<Position> positions;
+  for (unsigned int row = 0; row < rows_; row++)
+    for (unsigned int col = 0; col< cols_; col++)
+      positions.push_back({row, col});
+  return positions;
 }
 
 }

@@ -41,6 +41,8 @@ public:
   void Iterate(const std::function<void(const Position &at, cocos2d::ui::Widget *)> &function);
   void IteratePositions(const std::function<void(const Position &at)> &function);
 
+  const std::vector<Position> positions() const;
+
 protected:
   virtual void onSizeChanged() override;
 
