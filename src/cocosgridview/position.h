@@ -1,6 +1,8 @@
 #ifndef COCOSGRIDVIEW_H
 #define COCOSGRIDVIEW_H
 
+#include <climits>
+
 namespace cocosgridview {
 
 ///
@@ -9,14 +11,11 @@ namespace cocosgridview {
 struct Position {
   unsigned int row;
   unsigned int col;
-  Position(unsigned int row, unsigned int col): row(row), col(col) {
-  }
-  bool operator==(const Position &other) const {
-    return other.row == row && other.col == col;
-  }
-  bool operator!=(const Position &other) const {
-    return !((*this) == other);
-  }
+  Position(unsigned int row, unsigned int col);
+  Position();
+  bool operator==(const Position &other) const;
+  bool operator!=(const Position &other) const;
+  operator bool const();
 };
 
 }

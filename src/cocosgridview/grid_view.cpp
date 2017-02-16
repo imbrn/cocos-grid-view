@@ -93,8 +93,39 @@ void GridView::set_gap(float gap) {
   AlignComponents();
 }
 
+Position GridView::get_slot(const std::function<bool(Position)> &criteria) const {
+  for (unsigned int row = 0; row < rows_; row++)
+    for (unsigned int col = 0; col< cols_; col++)
+      if (criteria({row, col}))
+        return {row, col};
+  return Position();
+}
+
+Position GridView::get_slot(const cocos2d::Point &location) const {
+  return get_slot([this, location](Position at) {
+    return get_slot_area(at).containsPoint(location);
+  });
+}
+
+cocos2d::ui::Widget *GridView::get_component(const std::function<bool(Position, cocos2d::ui::Widget*)> &criteria) {
+  for (unsigned int row = 0; row < rows_; row++)
+    for (unsigned int col = 0; col< cols_; col++)
+      if (criteria({row, col}, get_component(Position{row, col})))
+        return get_component(Position{row, col});
+  return nullptr;
+}
+
+cocos2d::ui::Widget *GridView::get_component(const cocos2d::Point &location) {
+  return get_component([location](Position at, cocos2d::ui::Widget *component) {
+    return component->getBoundingBox().containsPoint(location);
+  });
+}
+
 cocos2d::ui::Widget *GridView::get_component(const Position &at) {
-  return components_[at.row][at.col];
+  if (IsValidPosition(at))
+    return components_[at.row][at.col];
+  else
+    return nullptr;
 }
 
 void GridView::set_component(const Position &at, cocos2d::ui::Widget *component) {
@@ -133,18 +164,6 @@ void GridView::onSizeChanged() {
   AlignComponents();
 }
 
-void GridView::Iterate(const std::function<void(const Position &at, cocos2d::ui::Widget*)> &function) {
-  IteratePositions([this, function](const Position &at) {
-    function(at, get_component(at));
-  });
-}
-
-void GridView::IteratePositions(const std::function<void(const Position &at)> &function) {
-  for (unsigned int row = 0; row < rows_; row++)
-    for (unsigned int col = 0; col < cols_; col++)
-      function({row, col});
-}
-
 void GridView::ScaleComponents() {
   IteratePositions([this](const Position &at) { ScaleComponent(at); });
 }
@@ -181,6 +200,22 @@ void GridView::DoAlignComponent(const Position &at, cocos2d::ui::Widget *compone
   auto area = get_slot_area(at);
   component->setAnchorPoint({0.5, 0.5});
   component->setPosition({area.getMidX(), area.getMidY()});
+}
+
+bool GridView::IsValidPosition(const Position &at) const {
+  return at.row < rows_ && at.col < cols_;
+}
+
+void GridView::Iterate(const std::function<void(const Position &at, cocos2d::ui::Widget*)> &function) {
+  IteratePositions([this, function](const Position &at) {
+    function(at, get_component(at));
+  });
+}
+
+void GridView::IteratePositions(const std::function<void(const Position &at)> &function) {
+  for (unsigned int row = 0; row < rows_; row++)
+    for (unsigned int col = 0; col < cols_; col++)
+      function({row, col});
 }
 
 unsigned int GridView::rows() {

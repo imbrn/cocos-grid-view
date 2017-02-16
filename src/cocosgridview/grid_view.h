@@ -29,6 +29,11 @@ public:
   float get_gap() const;
   void set_gap(float gap);
 
+  Position get_slot(const std::function<bool(Position)> &criteria) const;
+  Position get_slot(const cocos2d::Point &location) const;
+
+  cocos2d::ui::Widget *get_component(const std::function<bool(Position, cocos2d::ui::Widget*)> &criteria);
+  cocos2d::ui::Widget *get_component(const cocos2d::Point &location);
   cocos2d::ui::Widget *get_component(const Position &at);
   void set_component(const Position &at, cocos2d::ui::Widget *component);
   void RemoveAllComponents();
@@ -56,6 +61,8 @@ private:
   void AlignComponents();
   void AlignComponent(const Position &at);
   void DoAlignComponent(const Position &at, cocos2d::ui::Widget *component);
+
+  bool IsValidPosition(const Position &at) const;
 
  private:
   unsigned int rows_;
