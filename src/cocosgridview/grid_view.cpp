@@ -25,6 +25,7 @@ bool GridView::init() {
 }
 
 void GridView::DoInit() {
+  setCascadeOpacityEnabled(true);
   components_ = std::vector<std::vector<cocos2d::ui::Widget*>>(rows_, std::vector<cocos2d::ui::Widget*>(cols_));
 }
 
